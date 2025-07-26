@@ -1,7 +1,14 @@
 import React, { useRef, useState } from "react";
-import { Stage, Layer, Image as KonvaImage, Rect, Line, type StageProps } from "react-konva";
+import {
+  Stage,
+  Layer,
+  Image as KonvaImage,
+  Line,
+  type StageProps,
+} from "react-konva";
 import useImage from "use-image";
 import type { Tool } from "../App";
+import RectShape from "./RectShape";
 
 interface ShapeBase {
   id: string;
@@ -43,7 +50,7 @@ const CanvasEditor: React.FC<Props> = ({
   const [image] = useImage(imageUrl || "");
   const stageRef = useRef(null);
 
-  const handleMouseDown: StageProps['onMouseDown'] = (e) => {
+  const handleMouseDown: StageProps["onMouseDown"] = (e) => {
     const pos = e.target?.getStage()?.getPointerPosition();
 
     if (!pos) return;
@@ -63,7 +70,7 @@ const CanvasEditor: React.FC<Props> = ({
     }
   };
 
-  const handleMouseMove: StageProps['onMouseMove'] = (e) => {
+  const handleMouseMove: StageProps["onMouseMove"] = (e) => {
     const pos = e.target?.getStage()?.getPointerPosition();
 
     if (!pos) return;
@@ -80,7 +87,7 @@ const CanvasEditor: React.FC<Props> = ({
     }
   };
 
-  const handleMouseUp: StageProps['onMouseUp'] = () => {
+  const handleMouseUp: StageProps["onMouseUp"] = () => {
     if (tool === "rect" && tempRect) {
       setShapes([...shapes, tempRect as RectShape]);
       setTempRect(null);
@@ -98,7 +105,7 @@ const CanvasEditor: React.FC<Props> = ({
     }
   };
 
-  const updateDrag = (id: string, pos: { x: number; y: number }) => {
+  const handleRectDragEnd = (id: string, pos: { x: number; y: number }) => {
     setShapes((prev) =>
       prev.map((shape) =>
         shape.id === id && shape.type === "rect"
@@ -130,20 +137,15 @@ const CanvasEditor: React.FC<Props> = ({
 
         {shapes.map((shape) =>
           shape.type === "rect" ? (
-            <Rect
+            <RectShape
+            fill="bg-primary"
               key={shape.id}
+              id={shape.id}
               x={shape.x}
               y={shape.y}
               width={shape.width}
               height={shape.height}
-              stroke="red"
-              draggable
-              onDragEnd={(e) =>
-                updateDrag(shape.id, {
-                  x: e.target.x(),
-                  y: e.target.y(),
-                })
-              }
+              onDragEnd={handleRectDragEnd}
             />
           ) : (
             <Line
@@ -158,11 +160,14 @@ const CanvasEditor: React.FC<Props> = ({
         )}
 
         {tempRect && (
-          <Rect
-            x={tempRect.x}
-            y={tempRect.y}
-            width={tempRect.width}
-            height={tempRect.height}
+          <RectShape
+            className="bg-primary"
+            id={tempRect.id || "temp"}
+            x={tempRect.x || 0}
+            y={tempRect.y || 0}
+            width={tempRect.width || 0}
+            height={tempRect.height || 0}
+            isTemp={true}
             stroke="gray"
             dash={[4, 4]}
           />
